@@ -76,4 +76,41 @@ public class PrettyPrintVisitor : Visitor {
         VisitElement(element.getRhs());
 
     }
+    public override void VisitLoopElement(LoopElement element)
+    {
+        Console.WriteLine("loop element: {0}",element.getText());
+    }
+    public override void VisitMatIndElement(MatIndex element)
+    {
+        Console.WriteLine("matrix index: {0} \n",element.getText());
+       
+
+    }
+
+    public override void VisitMatScalAddElement(MatScalAdd element)
+    {
+        VisitElement(element.getLhs());
+        VisitElement(element.getRhs());
+    }
+
+    public override void VisitMatScalAssignElement(MatScalAssignment element)
+    {
+        VisitElement(element.getRhs());
+        VisitElement(element.getLhs());
+
+    }
+    public override void VisitParallelForElement(Parallel_For element)
+    {
+        Console.Write("parallel_for");
+        VisitElement(element.getLhs());
+        VisitElement(element.getRhs());
+    }
+
+    public override void VisitMatAdditionOperationElement(MatAddition element)
+    {
+        VisitElement(element.getLhs());
+        VisitElement(element.getRhs());
+        Console.Write("matrix addition");
+    }
+
 }

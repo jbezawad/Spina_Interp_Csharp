@@ -36,7 +36,8 @@ expr returns [Element ret]
   : assignment {retval.ret = $assignment.ret;}
   | print { retval.ret = $print.ret; }
   | matdecelement { retval.ret = $matdecelement.ret; }  
-  | matmul { retval.ret = $matmul.ret; }   
+  | matmul  { retval.ret =  $matmul.ret;  }   
+  | parallel { retval.ret = $parallel.ret;}
   ;
 
 
@@ -59,8 +60,63 @@ retval.ret = new MatMul();
 :
 matvar { retval.ret.setLhs($matvar.ret);   } 
 ASSIGNMENT                        
-matmultiplication { retval.ret.setRhs($matmultiplication.ret); }     
+( matmultiplication { retval.ret.setRhs($matmultiplication.ret); }   
+  |
+ mataddition   { retval.ret.setRhs($mataddition.ret); } )
 ;
+
+parallel returns [Parallel_For ret]
+@init{
+retval.ret = new Parallel_For();
+}
+:
+PARALLEL
+loop                      {   retval.ret.setLhs($loop.ret);        }
+OPENBRACE       
+matscalassignment         {   retval.ret.setRhs($matscalassignment.ret);  }   
+CLOSEBRACE
+END_OF_STATEMENT
+;
+
+
+matscalassignment returns [ MatScalAssignment ret]
+@init{
+    retval.ret = new MatScalAssignment();
+}
+:
+
+matindex   { retval.ret.setLhs($matindex.ret); }
+ASSIGNMENT 
+matscaladd { retval.ret.setRhs($matscaladd.ret);  }
+END_OF_STATEMENT
+;
+
+matscaladd returns [MatScalAdd ret]
+@init{
+retval.ret = new MatScalAdd();
+}  
+:
+el1=variable { retval.ret.setLhs($variable.ret); }
+'+'
+el2=matindex { retval.ret.setRhs($matindex.ret); }
+;
+
+matindex returns [MatIndex ret]
+@init{
+retval.ret = new MatIndex();
+}
+:
+MATINDEX { retval.ret.setText($MATINDEX.text);  }
+;
+
+loop returns [ LoopElement ret ]
+@init{
+ retval.ret = new LoopElement();
+}
+:
+LOOP   { retval.ret.setText($LOOP.Text);   }
+;
+
 
 matdecelement returns [MatDecElement ret]
 @init {
@@ -127,7 +183,17 @@ el1=matvar { retval.ret.setLhs($el1.ret);   }
  '*'
 el2=matvar { retval.ret.setRhs($el2.ret);   }
 ;
- 
+
+mataddition returns [ MatAddition ret]
+@init{
+retval.ret = new MatAddition();
+}
+:
+el1= matvar { retval.ret.setLhs($el1.ret); }
+'+'
+el2= matvar { retval.ret.setRhs($el2.ret); }
+;
+
 print returns [PrintOperationElement ret]
 @init {
   retval.ret = new PrintOperationElement();
@@ -148,4 +214,8 @@ INT_LITERAL: ('0'..'9')+;
 WHITESPACE: (' ' | '\t' | '\n' | '\r' )+ {$channel = HIDDEN; } ;
 MATVAR: VARIABLE ('['']')+;
 MATVAL: ('['(('0'..'9')|(','))+']')+;
-
+PARALLEL: ('parallel_for');
+LOOP: ('('VARIABLE ' ' INT_LITERAL '..' INT_LITERAL')');   
+OPENBRACE: ('{');
+CLOSEBRACE:('}');
+MATINDEX: (VARIABLE ('[' (INT_LITERAL | VARIABLE) ']')+);

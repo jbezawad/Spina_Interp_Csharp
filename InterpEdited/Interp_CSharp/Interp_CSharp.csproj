@@ -70,16 +70,22 @@
     <Compile Include="InterpLexer.cs" />
     <Compile Include="InterpParser.cs" />
     <Compile Include="InterpreterVisitor.cs" />
+    <Compile Include="LoopElement.cs" />
+    <Compile Include="MatAddition.cs" />
     <Compile Include="MatDecElement.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MatIndex.cs" />
     <Compile Include="MatMul.cs" />
     <Compile Include="MatMultiplicationOperationElement.cs" />
+    <Compile Include="MatScalAdd.cs" />
+    <Compile Include="MatScalAssign.cs" />
     <Compile Include="MatValElement.cs" />
     <Compile Include="MatVarElement.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MultiplicationOperationElement.cs" />
+    <Compile Include="Parallel_For.cs" />
     <Compile Include="PrettyPrintVisitor.cs" />
     <Compile Include="PrintOperationElement.cs" />
     <Compile Include="Program.cs" />

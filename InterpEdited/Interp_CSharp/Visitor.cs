@@ -23,6 +23,13 @@ public abstract class Visitor {
   public abstract void VisitMatDecElement(MatDecElement element);
   public abstract void VisitMatMultiplicationOperationElement(MatMultiplication element);
   public abstract void VisitMatAssignOperationElement(MatMul element);
+  public abstract void VisitMatIndElement(MatIndex element);
+  public abstract void VisitMatScalAddElement(MatScalAdd element);
+  public abstract void VisitMatScalAssignElement(MatScalAssignment element);
+  public abstract void VisitParallelForElement(Parallel_For element);
+  public abstract void VisitLoopElement(LoopElement element);
+  public abstract void VisitMatAdditionOperationElement(MatAddition element);
+
   public void VisitElement(Element element){
     if(element is IntegerElement){
       IntegerElement int_elem = (IntegerElement) element;
@@ -67,6 +74,39 @@ public abstract class Visitor {
         MatMul matmulassign_elem = (MatMul)element;
         VisitMatAssignOperationElement(matmulassign_elem);
     }
+    else if(element is MatIndex)
+    {
+        MatIndex matind = (MatIndex)element;
+        VisitMatIndElement(matind);
+
+    }
+    else if(element is MatScalAdd)
+    {
+        MatScalAdd matscaladd = (MatScalAdd)element;
+        VisitMatScalAddElement(matscaladd);
+ 
+    }
+    else if( element is MatScalAssignment)
+    {
+        MatScalAssignment matscalassign = (MatScalAssignment)element;
+        VisitMatScalAssignElement(matscalassign);
+    }
+    else if(element is LoopElement)
+    {
+        LoopElement loopel = (LoopElement)element;
+        VisitLoopElement(loopel);
+    }
+    else if(element is Parallel_For)
+    {
+        Parallel_For parallelfor = (Parallel_For)element;
+        VisitParallelForElement(parallelfor);
+    }
+    else if(element is MatAddition)
+    {
+      MatAddition mataddition = (MatAddition)element;
+        VisitMatAdditionOperationElement(mataddition);
+    }   
+
   }
        protected Visitor() { }
 }
