@@ -80,7 +80,8 @@ public class InterpreterVisitor : Visitor
   int    startloopvar, endloopvar;
   String loopvar,matind;
   string scalar,loopmatvar;
-  string resultMessage="";
+  string resultMessage="",operation;
+  string varormatvar,arrvalue="";
 
   public string results
   {
@@ -128,8 +129,20 @@ public class InterpreterVisitor : Visitor
      }
   }
 
-  
-  
+  public void threadAdd(Object obj)
+  {
+      lock (token)
+      {
+          if (obj is ThrInd)
+          {
+              ThrInd thind = (ThrInd)obj;
+              for(int i=0; i <= rescolumns - 1; i++)
+              {
+                  res[thind.Index,i] = left[thind.Index,i] + right[thind.Index,i];
+              }
+          }
+      }
+  }
 
     public override void VisitVariableElement(VariableElement element){
     resultMessage += "Visiting Variable Element"+"\n";
@@ -142,6 +155,7 @@ public class InterpreterVisitor : Visitor
       //propegation that will happen if I throw here
       //throw new Exception("Variable " + element.getText() + " not defined.");
      }
+    varormatvar = "var";
     }
   
     public override void VisitIntegerElement(IntegerElement element)
@@ -226,7 +240,7 @@ public class InterpreterVisitor : Visitor
         VisitElement(element.getRhs());
         indicate = -1;
         String value="0";
-        
+        operation = "*"; 
         CharEnumerator la = larr.GetEnumerator();
         CharEnumerator ra = rarr.GetEnumerator();
 
@@ -318,7 +332,7 @@ public class InterpreterVisitor : Visitor
     public override void VisitMatValElement(MatVal element)
     {
         arrVariableMap[s] = element.getText();
-        s = null;
+        s = "";
     }
 
     public override void VisitMatVarElement(MatVar element)
@@ -327,30 +341,57 @@ public class InterpreterVisitor : Visitor
         if (indicate == 2)
             larr = (string)arrVariableMap[element.getText()];
         else if (indicate == 1)
-            rarr = (string)arrVariableMap[element.getText()]; 
+            rarr = (string)arrVariableMap[element.getText()];
+        varormatvar = "matvar";
+        
     }
 
     public override void VisitPrintOperationElement(PrintOperationElement element)
     {
+ 
      VisitElement(element.getChildElement());
-     int result = mStack.Pop();
-     Console.WriteLine(result.ToString());
-     resultMessage += result.ToString()+"\n";        
+     int result = 0;
+     if (varormatvar.CompareTo("var") == 0)
+     {
+         if (mStack.Count > 0)
+             result = mStack.Pop();
+         Console.WriteLine(result.ToString());
+         resultMessage += result.ToString() + "\n";
+     }
+     else
+     {
+         resultMessage += arrVariableMap[s];
+         Console.WriteLine("The print value of array is {0}",arrVariableMap[s]);         
+     }
     }
     
     public override void VisitMatAssignOperationElement(MatMul element)
     {
         
-        VisitElement(element.getLhs());
+        
         VisitElement(element.getRhs());
+        VisitElement(element.getLhs());
         resultMessage += "Processing Matrix Assignment Operation"+"\n";
         Thread[] threads=new Thread[resrows];
-       
-        for (int i = 0; i < resrows; i++)
+        if (operation.CompareTo("*") == 0)
         {
-         ParameterizedThreadStart pts = new ParameterizedThreadStart(threadMul);
-         threads[i] = new Thread(pts);
-         threads[i].Start(new ThrInd(i));         
+            for (int i = 0; i < resrows; i++)
+            {
+                ParameterizedThreadStart pts = new ParameterizedThreadStart(threadMul);
+                threads[i] = new Thread(pts);
+                threads[i].Start(new ThrInd(i));
+            }
+        }
+        else if (operation.CompareTo("+") == 0)
+        {
+            for (int i = 0; i < resrows; i++)
+            {
+                ParameterizedThreadStart pts = new ParameterizedThreadStart(threadAdd);
+                threads[i] = new Thread(pts);
+                threads[i].Start(new ThrInd(i));
+            }
+           
+
         }
 
         foreach (Thread t in threads)
@@ -359,25 +400,125 @@ public class InterpreterVisitor : Visitor
                 continue;
         }
 
-        
-       
         for (int i = 0; i < resrows ; i++)
         {
+            arrvalue += "[";
+            Console.WriteLine("Arrvalue is{0}",arrvalue);
             for (int j = 0; j < rescolumns ; j++)
             {
                 Console.Write("{0} \t",res[i,j]);
                 resultMessage += string.Format("{0} \t", res[i, j]);
+                arrvalue += string.Format("{0}",res[i,j]);
+                if (j + 1 == rescolumns)
+                { }
+                else
+                    arrvalue += ",";
 
             }
-
+            arrvalue += "]";
             Console.Write("\n");
+            resultMessage += "\n";
         }
+
+        Console.WriteLine("Printing value of s in MatAssignOperation: {0} which is {1}",s,arrvalue); // to be removed
+        arrVariableMap[s] = arrvalue;
+        arrvalue = "";
+
     }
 
 
     public override void VisitMatAdditionOperationElement(MatAddition element)
     {
-        Console.Write(""); 
+        //VisitElement(element.getLhs());
+        //VisitElement(element.getRhs());
+        operation = "+";
+        resultMessage += "performing matrix addition element" + "\n";
+        int index = 0, row = 0, column = 0;
+        indicate = 2;
+        VisitElement(element.getLhs());
+        indicate = 1;
+        VisitElement(element.getRhs());
+        indicate = -1;
+        String value = "0";
+        operation = "+";
+        CharEnumerator la = larr.GetEnumerator();
+        CharEnumerator ra = rarr.GetEnumerator();
+
+        la.MoveNext();
+        ra.MoveNext();
+
+        s = null;
+
+
+        left = new int[ArrRow(larr), ArrColumn(larr)];
+        right = new int[ArrRow(rarr), ArrColumn(rarr)];
+
+        resrows = ArrRow(larr);
+        rescolumns = ArrColumn(rarr);
+        collim = ArrColumn(larr);
+
+        while (index != larr.Length)
+        {
+
+            if (la.Current.CompareTo(']') == 0)
+            {
+                left[row, column] = int.Parse(value);
+                row += 1;
+                column = 0;
+                value = "0";
+            }
+
+
+            if (la.Current.CompareTo(',') != 0 && la.Current.CompareTo('[') != 0 && la.Current.CompareTo(']') != 0)
+            {
+                //String.Concat(value,value,la.Current.ToString());                  
+                value = value + la.Current.ToString();
+            }
+
+            if (la.Current.CompareTo(',') == 0 && la.Current.CompareTo('[') != 0 && la.Current.CompareTo(']') != 0)
+            {
+
+                left[row, column] = int.Parse(value);
+                column++;
+                value = "0";
+
+            }
+            index++;
+            la.MoveNext();
+        }
+
+        index = 0; row = 0; column = 0;
+        value = "0";
+        while (index != rarr.Length)
+        {
+
+            if (ra.Current.CompareTo(']') == 0)
+            {
+                right[row, column] = int.Parse(value);
+                row += 1;
+                column = 0;
+                value = "0";
+            }
+
+            if (ra.Current.CompareTo(',') != 0 && ra.Current.CompareTo('[') != 0 && ra.Current.CompareTo(']') != 0)
+            {
+                //String.Concat(value,value,la.Current.ToString());                  
+                value = value + ra.Current.ToString();
+            }
+
+            if (ra.Current.CompareTo(',') == 0 && ra.Current.CompareTo('[') != 0 && ra.Current.CompareTo(']') != 0)
+            {
+
+                right[row, column] = int.Parse(value);
+                column++;
+                value = "0";
+
+            }
+            index++;
+            ra.MoveNext();
+        }
+        res = new int[resrows, rescolumns]; 
+
     }
 
 

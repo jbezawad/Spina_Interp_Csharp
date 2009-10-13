@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Collections;
+using System.Threading;
 
 namespace Interp_CSharp
 {
@@ -80,9 +81,11 @@ namespace Interp_CSharp
 
         private void button3_Click(object sender, EventArgs e)
         {
+            
             theprogram = new Program();
             if(progcon!=null)
             theprogram.RunEvalLoop(progcon);
+            Thread.Sleep(1000);
             textBox3.Text = theprogram.resultMessage;
             theprogram.resultMessage = "";
             progcon = "";

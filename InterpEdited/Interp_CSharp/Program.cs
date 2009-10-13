@@ -57,7 +57,22 @@ namespace Interp_CSharp
           
              VisitLine(line);                 
       }
-      
+
+      public void RunEvalLoop()
+      {
+          while (true)
+          {
+              Console.Write("Interp> ");
+              String line = Console.ReadLine();
+              if (line == "reset")
+                  interp_visitor = new InterpreterVisitor();
+              else
+                  VisitLine(line);
+          }
+
+
+      }
+
       [STAThread]
       public static void Main(String[] args)
       {
@@ -73,14 +88,19 @@ namespace Interp_CSharp
          {
              ui.communicate(true);
              ui.ShowDialog();
-         }
+         } 
          
          //first demonstrate visiting premade line.
-         //theprogram.VisitLine("myvar = 1+3; a[][] [10,20,30][20,30,40]; parallel_for(myvar 0..2){ a[i] = myvar + a[i];}; ");
-         //theprogram.VisitLine("myvariable = 1 + 2; var = myvariable + 3; print var; a[][] [10,2][10,3]; b[][] [10,30][40,50]; c[][] = a[][] * b[][];");
-         //theprogram.RunEvalLoop();
+         /*Program theprogram = new Program();
+         theprogram.VisitLine("myvar = 1+3; a[] [10,20,30][20,30,40]; parallel_for(myvar 0..2){ a[i] = myvar + a[i];}; ");
+         theprogram.VisitLine("myvariable = 1 + 2; var = myvariable + 3; print var; d[][] [10,2][10,3]; b[][] [10,30][40,50]; ");
+         theprogram.VisitLine("c[][] = d[][] + b[][];");
+         theprogram.VisitLine("c[][] = d[][] * b[][];");
+         theprogram.VisitLine("c[][] = c[][] + b[][]; print a[]; print c[][];");
+         theprogram.RunEvalLoop();*/
+
          //Console.Read();
-         // uithread.
+         //uithread.
         
       }
    }

@@ -199,8 +199,7 @@ print returns [PrintOperationElement ret]
 @init {
   retval.ret = new PrintOperationElement();
 }
-  : 'print' (var_or_int_literal {retval.ret.setChildElement($var_or_int_literal.ret); }
-| matvar {retval.ret.setChildElement($matvar.ret); } )
+  : 'print' var_or_int_literal {retval.ret.setChildElement($var_or_int_literal.ret); }
     END_OF_STATEMENT; 
 
 /*
