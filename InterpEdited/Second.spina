@@ -1,0 +1,20 @@
+myvar = 1+3; 
+var = myvar * myvar;
+a[] [10,20,30];
+parallel_for(i 0..2){ a[i] = var + a[i];};
+myvariable = 1 + 2; 
+var = myvariable + 3; 
+print var; 
+d[][] [10,2][10,3][30,40]; 
+b[][] [10,30,40][40,50,60]; 
+e[][] [10,10][20,20];
+f[][] [10,10][20,30][10,10];
+c[][] = d[][] * b[][];
+c[][] = d[][] * e[][];
+c[][] = c[][] + f[][];
+print c[][];
+print d[][];
+print e[][];
+print f[][];
+
+
